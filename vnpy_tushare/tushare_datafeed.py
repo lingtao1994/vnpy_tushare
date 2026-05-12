@@ -14,6 +14,10 @@ from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import BarData, HistoryRequest
 from vnpy.trader.utility import round_to, ZoneInfo
 
+#tushare配置
+pro = ts.pro_api('SnKInQIAVUenKgNzmniKAAVpSovBIKophnYOLTaADlgJZZLyVNJQRvEsmrsTHZUP')
+pro._DataApi__http_url = "http://118.89.66.41:8010/"
+
 # 数据频率映射
 INTERVAL_VT2TS: dict[Interval, str] = {
     Interval.MINUTE: "1min",
@@ -174,6 +178,7 @@ class TushareDatafeed(BaseDatafeed):
 
         try:
             d1: DataFrame = ts.pro_bar(
+                api=pro,
                 ts_code=ts_symbol,
                 start_date=start,
                 end_date=end,
@@ -192,6 +197,7 @@ class TushareDatafeed(BaseDatafeed):
             tmp_end: str = d1["trade_time"].values[-1]
 
             d1 = ts.pro_bar(
+                api=pro,
                 ts_code=ts_symbol,
                 start_date=start,
                 end_date=tmp_end,
