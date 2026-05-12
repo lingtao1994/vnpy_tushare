@@ -18,6 +18,10 @@ from vnpy.trader.utility import round_to, ZoneInfo
 pro = ts.pro_api('SnKInQIAVUenKgNzmniKAAVpSovBIKophnYOLTaADlgJZZLyVNJQRvEsmrsTHZUP')
 pro._DataApi__http_url = "http://118.89.66.41:8010/"
 
+# temp的配置，如果后续用官方tushare接口则需要修改
+SETTINGS["datafeed.username"] = "steve"
+SETTINGS["datafeed.password"] = "123456"
+
 # 数据频率映射
 INTERVAL_VT2TS: dict[Interval, str] = {
     Interval.MINUTE: "1min",
@@ -159,8 +163,12 @@ class TushareDatafeed(BaseDatafeed):
         symbol: str = req.symbol
         exchange: Exchange = req.exchange
         interval: Interval = req.interval
-        start: datetime = req.start.strftime("%Y-%m-%d %H:%M:%S")
-        end: datetime = req.end.strftime("%Y-%m-%d %H:%M:%S")
+        if interval == Interval.DAILY:
+            start: str = "" if req.start == "" else req.start.strftime("%Y%m%d")
+            end: str = "" if req.end == "" else req.end.strftime("%Y%m%d")
+        else:
+            start = "" if req.start == "" else req.start.strftime("%Y-%m-%d %H:%M:%S")
+            end = "" if req.end == "" else req.end.strftime("%Y-%m-%d %H:%M:%S")
 
         ts_symbol: str | None = to_ts_symbol(symbol, exchange)
         if not ts_symbol:
@@ -183,7 +191,8 @@ class TushareDatafeed(BaseDatafeed):
                 start_date=start,
                 end_date=end,
                 asset=asset,
-                freq=ts_interval
+                freq=ts_interval,
+                adj="qfq"
             )
         except OSError as ex:
             output(f"发生输入/输出错误：{ex.strerror}")
@@ -202,7 +211,8 @@ class TushareDatafeed(BaseDatafeed):
                 start_date=start,
                 end_date=tmp_end,
                 asset=asset,
-                freq=ts_interval
+                freq=ts_interval,
+                adj="qfq"
             )
             df = pd.concat([df[:-1], d1])
 
